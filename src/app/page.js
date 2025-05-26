@@ -8,8 +8,8 @@ const DiceBettingGame = () => {
   const [isRolling, setIsRolling] = useState(false);
   const [gameResult, setGameResult] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [balance, setBalance] = useState(1000);
-  const [betAmount, setBetAmount] = useState(50);
+  const [balance, setBalance] = useState(100000);
+  const [betAmount, setBetAmount] = useState(5000);
 
   const betOptions = [
     { id: 'below', label: 'Below 7', condition: (sum) => sum < 7, payout: 2 },
@@ -111,9 +111,9 @@ const DiceBettingGame = () => {
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-md w-full shadow-2xl border border-white/20">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">🎲 GAME DATU</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">🎲 Dice Bet</h1>
           <div className="text-xl text-yellow-300 font-semibold">
-            Balance: ${balance}
+            Balance: Rp {balance.toLocaleString('id-ID')}
           </div>
         </div>
 
@@ -134,13 +134,13 @@ const DiceBettingGame = () => {
         {/* Bet Amount */}
         <div className="mb-6">
           <label className="block text-white text-sm font-semibold mb-2">
-            Bet Amount: ${betAmount}
+            Bet Amount: Rp {betAmount.toLocaleString('id-ID')}
           </label>
           <input
             type="range"
-            min="10"
-            max="200"
-            step="10"
+            min="1000"
+            max="20000"
+            step="1000"
             value={betAmount}
             onChange={(e) => setBetAmount(Number(e.target.value))}
             className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
@@ -192,7 +192,7 @@ const DiceBettingGame = () => {
           ) : !selectedBet ? (
             'Select a Bet First'
           ) : (
-            `Roll Dice - Bet $${betAmount}`
+            `Roll Dice - Bet Rp ${betAmount.toLocaleString('id-ID')}`
           )}
         </button>
 
@@ -206,14 +206,14 @@ const DiceBettingGame = () => {
             }
           `}>
             <div className={`text-xl font-bold mb-2 ${gameResult.won ? 'text-green-300' : 'text-red-300'}`}>
-              {gameResult.won ? '🎉 eh menang goblok!' : '😞 TOLOL!'}
+              {gameResult.won ? '🎉 YOU WON!' : '😞 YOU LOST!'}
             </div>
             <div className="text-white text-sm">
               Sum was {gameResult.sum} • Bet: {gameResult.betType}
             </div>
             {gameResult.won && (
               <div className="text-yellow-300 font-semibold mt-1">
-                Won: ${gameResult.payout}
+                Won: Rp {gameResult.payout.toLocaleString('id-ID')}
               </div>
             )}
             <button
