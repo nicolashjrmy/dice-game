@@ -1,103 +1,238 @@
-import Image from "next/image";
+"use client";
+import React, { useState, useEffect } from 'react';
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+const DiceBettingGame = () => {
+  const [dice1, setDice1] = useState(1);
+  const [dice2, setDice2] = useState(1);
+  const [selectedBet, setSelectedBet] = useState(null);
+  const [isRolling, setIsRolling] = useState(false);
+  const [gameResult, setGameResult] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [balance, setBalance] = useState(1000);
+  const [betAmount, setBetAmount] = useState(50);
+
+  const betOptions = [
+    { id: 'below', label: 'Below 7', condition: (sum) => sum < 7, payout: 2 },
+    { id: 'equal', label: 'Equal to 7', condition: (sum) => sum === 7, payout: 5 },
+    { id: 'above', label: 'Above 7', condition: (sum) => sum > 7, payout: 2 }
+  ];
+
+  const rollDice = () => {
+    if (!selectedBet || isRolling) return;
+    
+    setIsRolling(true);
+    setShowResult(false);
+    setGameResult(null);
+    
+    // Deduct bet amount
+    setBalance(prev => prev - betAmount);
+    
+    // Animate dice rolling for 2 seconds
+    const rollAnimation = setInterval(() => {
+      setDice1(Math.floor(Math.random() * 6) + 1);
+      setDice2(Math.floor(Math.random() * 6) + 1);
+    }, 100);
+    
+    setTimeout(() => {
+      clearInterval(rollAnimation);
+      
+      // Final dice values
+      const finalDice1 = Math.floor(Math.random() * 6) + 1;
+      const finalDice2 = Math.floor(Math.random() * 6) + 1;
+      const sum = finalDice1 + finalDice2;
+      
+      setDice1(finalDice1);
+      setDice2(finalDice2);
+      
+      // Check if bet won
+      const selectedOption = betOptions.find(opt => opt.id === selectedBet);
+      const won = selectedOption.condition(sum);
+      
+      if (won) {
+        setBalance(prev => prev + (betAmount * selectedOption.payout));
+      }
+      
+      setGameResult({
+        sum,
+        won,
+        payout: won ? betAmount * selectedOption.payout : 0,
+        betType: selectedOption.label
+      });
+      
+      setIsRolling(false);
+      setTimeout(() => setShowResult(true), 500);
+    }, 2000);
+  };
+
+  const resetGame = () => {
+    setSelectedBet(null);
+    setGameResult(null);
+    setShowResult(false);
+  };
+
+  const DiceFace = ({ value, isRolling }) => {
+    const dots = [];
+    const dotPositions = {
+      1: [[50, 50]],
+      2: [[25, 25], [75, 75]],
+      3: [[25, 25], [50, 50], [75, 75]],
+      4: [[25, 25], [75, 25], [25, 75], [75, 75]],
+      5: [[25, 25], [75, 25], [50, 50], [25, 75], [75, 75]],
+      6: [[25, 25], [75, 25], [25, 50], [75, 50], [25, 75], [75, 75]]
+    };
+
+    dotPositions[value].forEach((pos, index) => {
+      dots.push(
+        <div
+          key={index}
+          className="absolute w-3 h-3 bg-gray-800 rounded-full"
+          style={{
+            left: `${pos[0]}%`,
+            top: `${pos[1]}%`,
+            transform: 'translate(-50%, -50%)'
+          }}
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      );
+    });
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    return (
+      <div className={`
+        relative w-20 h-20 bg-white rounded-xl shadow-lg border-2 border-gray-300
+        transition-all duration-200 transform
+        ${isRolling ? 'animate-spin scale-110' : 'hover:scale-105'}
+      `}>
+        {dots}
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+      <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-md w-full shadow-2xl border border-white/20">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">🎲 GAME DATU</h1>
+          <div className="text-xl text-yellow-300 font-semibold">
+            Balance: ${balance}
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        {/* Dice Container */}
+        <div className="flex justify-center items-center space-x-6 mb-8">
+          <DiceFace value={dice1} isRolling={isRolling} />
+          <div className="text-3xl text-white font-bold">+</div>
+          <DiceFace value={dice2} isRolling={isRolling} />
+        </div>
+
+        {/* Sum Display */}
+        <div className="text-center mb-6">
+          <div className="text-2xl text-white font-bold">
+            Sum: {dice1 + dice2}
+          </div>
+        </div>
+
+        {/* Bet Amount */}
+        <div className="mb-6">
+          <label className="block text-white text-sm font-semibold mb-2">
+            Bet Amount: ${betAmount}
+          </label>
+          <input
+            type="range"
+            min="10"
+            max="200"
+            step="10"
+            value={betAmount}
+            onChange={(e) => setBetAmount(Number(e.target.value))}
+            className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer"
+            disabled={isRolling}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        </div>
+
+        {/* Betting Options */}
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          {betOptions.map((option) => (
+            <button
+              key={option.id}
+              onClick={() => setSelectedBet(option.id)}
+              disabled={isRolling}
+              className={`
+                p-3 rounded-xl text-sm font-semibold transition-all duration-200
+                ${selectedBet === option.id
+                  ? 'bg-yellow-500 text-black scale-105 shadow-lg'
+                  : 'bg-white/20 text-white hover:bg-white/30 hover:scale-105'
+                }
+                ${isRolling ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+              `}
+            >
+              <div>{option.label}</div>
+              <div className="text-xs opacity-80">{option.payout}x payout</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Roll Button */}
+        <button
+          onClick={rollDice}
+          disabled={!selectedBet || isRolling || balance < betAmount}
+          className={`
+            w-full py-4 rounded-xl font-bold text-lg transition-all duration-200
+            ${!selectedBet || isRolling || balance < betAmount
+              ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+              : 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 hover:scale-105 shadow-lg'
+            }
+          `}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          {isRolling ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-2"></div>
+              Rolling...
+            </div>
+          ) : balance < betAmount ? (
+            'Insufficient Balance'
+          ) : !selectedBet ? (
+            'Select a Bet First'
+          ) : (
+            `Roll Dice - Bet $${betAmount}`
+          )}
+        </button>
+
+        {/* Result Display */}
+        {showResult && gameResult && (
+          <div className={`
+            mt-6 p-4 rounded-xl text-center transition-all duration-500 transform
+            ${gameResult.won 
+              ? 'bg-green-500/20 border-2 border-green-400 animate-pulse' 
+              : 'bg-red-500/20 border-2 border-red-400'
+            }
+          `}>
+            <div className={`text-xl font-bold mb-2 ${gameResult.won ? 'text-green-300' : 'text-red-300'}`}>
+              {gameResult.won ? '🎉 eh menang goblok!' : '😞 TOLOL!'}
+            </div>
+            <div className="text-white text-sm">
+              Sum was {gameResult.sum} • Bet: {gameResult.betType}
+            </div>
+            {gameResult.won && (
+              <div className="text-yellow-300 font-semibold mt-1">
+                Won: ${gameResult.payout}
+              </div>
+            )}
+            <button
+              onClick={resetGame}
+              className="mt-3 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
+            >
+              Play Again
+            </button>
+          </div>
+        )}
+
+        {/* Game Rules */}
+        <div className="mt-6 text-xs text-white/70 text-center">
+          <div className="mb-1">Below 7 & Above 7: 2x payout</div>
+          <div>Equal to 7: 5x payout</div>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default DiceBettingGame;
