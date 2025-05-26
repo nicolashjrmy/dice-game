@@ -111,7 +111,7 @@ const DiceBettingGame = () => {
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 max-w-md w-full shadow-2xl border border-white/20">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">🎲 Dice Bet</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">🎲 DADU DATU</h1>
           <div className="text-xl text-yellow-300 font-semibold">
             Balance: Rp {balance.toLocaleString('id-ID')}
           </div>
@@ -206,7 +206,7 @@ const DiceBettingGame = () => {
             }
           `}>
             <div className={`text-xl font-bold mb-2 ${gameResult.won ? 'text-green-300' : 'text-red-300'}`}>
-              {gameResult.won ? '🎉 YOU WON!' : '😞 YOU LOST!'}
+              {gameResult.won ? '🎉 anjing menang dah' : '😞 TOLOL GOBLOK!'}
             </div>
             <div className="text-white text-sm">
               Sum was {gameResult.sum} • Bet: {gameResult.betType}
